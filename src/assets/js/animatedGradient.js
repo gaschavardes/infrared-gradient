@@ -184,7 +184,7 @@ void main() {
     tuv -= .5;
 
     // rotate with Noise
-    float degree = noise(vec2(noiseTime*.1, tuv.x*tuv.y));
+    float degree = noise(vec2(noiseTime*.1 - flow.b * 0.1, tuv.x*tuv.y + flow.b * 0.1));
 
     tuv.y *= 1./ratio;
     tuv *= Rot(radians((degree-.5)*720.+180.));
