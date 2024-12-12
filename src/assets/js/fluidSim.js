@@ -246,6 +246,8 @@ export default class FluidSim {
     this.gl = gl;
     this.post = new Post(this.gl);
     this.mouse = mouse;
+	this.offsetX = 0
+	this.offsetY = 0
 
     window.addEventListener("resize", this.onResize);
     this.onResize();
@@ -276,8 +278,7 @@ export default class FluidSim {
     this.halfFloat = this.gl.renderer.isWebgl2
       ? this.gl.HALF_FLOAT
       : this.gl.renderer.extensions["OES_texture_half_float"].HALF_FLOAT_OES;
-
-    this.filtering = supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
+    this.filtering = supportLinearFiltering ? this.gl.LINEAR : this.gl.NEAREST;
     let rgba, rg, r;
 
     if (this.gl.renderer.isWebgl2) {
@@ -631,8 +632,8 @@ export default class FluidSim {
     if (vec2.length(this.mouse.velocity) > 0) {
       this.splats.push({
         // Get mouse value in 0 to 1 range, with y flipped
-        x: 0.5 + this.mouse.cursor[0],
-        y: 0.5 - this.mouse.cursor[1],
+        x: 0.5 + this.mouse.cursor[0] - this.offsetX,
+        y: 0.5 - this.mouse.cursor[1] - this.offsetY,
         dx: this.mouse.velocity[0] * this.wSize.w,
         dy: this.mouse.velocity[1] * -this.wSize.h,
       });

@@ -14,6 +14,10 @@ import FluidSim from "./fluidSim";
 import glslify from "glslify";
 import Mouse from "./mouse";
 import Raf from "./raf";
+import gsap from 'gsap'
+import ScrollTrigger from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger)
 
 const vertex = /* glsl */ `
 attribute vec2 uv;
@@ -192,8 +196,8 @@ void main() {
 
     
     // Wave warp with sin
-    float frequency = 10.;
-    float amplitude = 15.;
+    float frequency = 5.;
+    float amplitude = 5.;
     float speed = noiseTime * 2.;
     tuv.x += sin(tuv.y*frequency+speed)/amplitude;
    	tuv.y += sin(tuv.x*frequency*1.5+speed)/(amplitude*.5);
@@ -219,13 +223,17 @@ void main() {
 
 export default class animatedGradient {
   constructor(dom) {
+	this.domSize = dom.getBoundingClientRect()
     this.wSize = {
-      w: window.innerWidth,
-      h: window.innerHeight,
+      w: this.domSize.width,
+      h: this.domSize.height,
     };
+
     this.dom = dom;
-    this.offset = 0;
+    this.offsetY = 0;
+	this.offsetX = 0;
     this.time = 0;
+
 
     this.init();
   }
@@ -248,14 +256,17 @@ export default class animatedGradient {
     this.mouse = new Mouse(this.dom);
     this.raf = new Raf();
 
-    this.raf.suscribe("gradient", this.animate, 60);
+    // this.raf.suscribe("gradient", this.animate, 60);
 
     this.fluidSim = new FluidSim(this.gl, this.mouse);
+	this.fluidSim.offsetX = this.domSize.left / window.innerWidth
+
     this.setFlow();
     this.setPlane();
     this.animate();
 
     window.addEventListener("resize", this.onResize);
+	this.setScrollTrigger()
   }
 
   setPlane() {
@@ -294,6 +305,32 @@ export default class animatedGradient {
 
   setFlow() {
     this.flowmap = new Flowmap(this.gl, { dissipation: 0.99, size: 300 });
+  }
+
+  setScrollTrigger(){
+	this.scroll = ScrollTrigger.create({
+		trigger: this.dom,
+		start: 'top bottom',
+		end: 'bottom top',
+		onUpdate: (self) => {
+			this.offsetY = (self.progress - 0.5) * 2
+			if(this.fluidSim){
+				this.fluidSim.offsetY = this.offsetY
+			}
+		},
+		onEnter: () => {
+			this.raf.suscribe("gradient", this.animate, 60);
+		},
+		onEnterBack: () => {
+			this.raf.suscribe("gradient", this.animate, 60);
+		},
+		onLeave: () => {
+			this.raf.unsuscribe("gradient", this.animate, 60);
+		},
+		onLeaveBack: () => {
+			this.raf.unsuscribe("gradient", this.animate, 60);
+		}
+	})
   }
 
   animate = () => {
@@ -335,8 +372,8 @@ export default class animatedGradient {
 
   onResize = () => {
     this.wSize = {
-      w: window.innerWidth,
-      h: window.innerHeight,
+      w: this.dom.getBoundingClientRect().width,
+      h: this.dom.getBoundingClientRect().height,
     };
     this.renderer.setSize(this.wSize.w, this.wSize.h);
     this.mesh.program.uniforms.uResolution.value = new Vec2(

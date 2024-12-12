@@ -15,8 +15,8 @@ export default class Mouse {
 		this.wheelVelocity = vec2.fromValues(0, 0);
 		this.wheel = vec2.fromValues(0, 0);
 		this.lastWheel = vec2.fromValues(0, 0);
-		this.screenWidth = window.innerWidth;
-		this.screenHeight = window.innerHeight;
+		this.screenWidth = target.getBoundingClientRect().width;
+		this.screenHeight = target.getBoundingClientRect().height;
 		this.isDown = false;
 		this.wheelDir = null;
 		this.emitter = {};

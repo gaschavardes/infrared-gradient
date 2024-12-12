@@ -14,5 +14,5 @@ export default function WebGLComponent({data}){
 		}
 	}, [data])
 
-	return <div id="gl" ref={canvas} className={styles.canvas}></div>
+	return <div  ref={canvas} className={[styles.canvas]}></div>
 }
