@@ -42,16 +42,9 @@ uniform vec3 uColor1;
 uniform vec3 uColor2;
 uniform vec3 uColor3;
 uniform vec2 uResolution;
-uniform sampler2D uTexture1;
-uniform sampler2D uTexture2;
-uniform sampler2D tFlow;
 uniform sampler2D tFluid;
-uniform float uPixelProgress;
-uniform float uPixelProgress2;
-uniform vec2 uMousePos;
 uniform float uMouseVel;
 uniform float uPixelSize;
-uniform float uProgress;
 #define S(a,b,t) smoothstep(a,b,t)
 
 varying vec2 vUv;
@@ -165,21 +158,15 @@ void main() {
 	vec2 coordinates = vUv - 0.5;
 
 	vec3 flow = texture2D(tFluid, vUv).rgb;
-	// vec2 fluidUv = vUv - fluid.rg * 0.0002;
-
 
 	float noiseValX = noise(vec2(vUv.x * ( 5. * sin(uTime * 0.001)), vUv.y * ( 5. * cos(uTime * 0.001))));
 	float noiseValY = noise(vec2(vUv.y * ( 5. * sin(uTime * 0.001)), vUv.x * ( 5. * cos(uTime * 0.001))));
    
-	vec2 pixelSize =  vec2(40./(uResolution.x), 40./uResolution.y);
-	vec2 positionHover = floor( coordinates/(pixelSize) )*(pixelSize) + .5;
 	
 	float circleCenter = circle(vec2(vUv.x + (noiseValX - 0.5 ) * 0.25, vUv.y + (noiseValX- 0.5) * 0.25 ), .1, 2.);
 	float centerNoise = noise(vec2(uTime * 0.001 + vUv.x * (3. + 1. * sin(uTime * 0.001)), vUv.y * (3. + 1. * cos(uTime * 0.001))));
 	centerNoise = smoothstep(centerNoise, 0.2,  0.5);
 	float center = smoothstep(min(centerNoise + circleCenter, 1.) , 1., 0.3);
-
-
 
     float ratio = uResolution.x / uResolution.y;
 
@@ -213,10 +200,7 @@ void main() {
     
     vec3 col = finalComp;
 
-
-
 	gl_FragColor.rgb = mix(col, vec3(0.), pow(circleCenter * 0., 1.5)) ;
-	// gl_FragColor.rgb = flow * 0.1 + 0.5;
 	gl_FragColor.a = 1.;
 }
 `;
@@ -283,15 +267,8 @@ export default class animatedGradient {
         uColor2: { value: new Color("#EA6644") },
         uColor1: { value: new Color("#F5B532") },
         uResolution: { value: this.resolution },
-        uPixelProgress: { value: 1 },
-        uPixelProgress2: { value: 1 },
         uRatio: { value: 16 / 9 },
-        uMousePos: { value: new Vec2() },
-        uMouseVel: { value: 1 },
-        tFlow: this.flowmap.uniform,
         tFluid: { value: null },
-        uPixelSize: { value: this.type === 3 ? 50 : 200 },
-        uProgress: { value: 0 },
       },
     });
 
@@ -341,23 +318,6 @@ export default class animatedGradient {
     if (this.fluidSim) {
       this.fluidSim.update(this.time);
     }
-
-    //UPDATE FLOWMAP
-    this.flowmap.aspect = this.wSize.w / this.wSize.h;
-    this.flowmap.mouse.copy(
-      new Vec2(
-        this.mouse.cursor[0] + 0.5,
-        -this.mouse.cursor[1] + 0.5 + this.offset
-      )
-    );
-
-    const velocityVec = new Vec2(
-      this.mouse.velocity[0],
-      this.mouse.velocity[1]
-    );
-    this.flowmap.velocity.lerp(velocityVec, 0.1);
-
-    this.flowmap.update();
 
     if (this.fluidSim) {
       this.mesh.program.uniforms.tFluid.value =

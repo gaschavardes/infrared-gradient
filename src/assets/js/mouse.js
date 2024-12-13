@@ -82,11 +82,9 @@ export default class Mouse {
 	}
 
 	onMouve(event) {
-		console.log(event)
 		this.cursor[0] = (event.clientX / this.screenWidth - 0.5);
 		this.cursor[1] = (event.clientY / this.screenHeight - 0.5);
 		this.emitter.emit('mouve', this);
-		console.log(event.layerY)
 		if (this.isDown) { this.emitter.emit('drag', this); }
 	}
 

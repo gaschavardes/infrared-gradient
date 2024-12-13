@@ -631,18 +631,15 @@ export default class FluidSim {
   update(t) {
     if (vec2.length(this.mouse.velocity) > 0) {
       this.splats.push({
-        // Get mouse value in 0 to 1 range, with y flipped
         x: 0.5 + this.mouse.cursor[0],
-        y: 0.5 - this.mouse.cursor[1],
+        y: 0.5 - this.mouse.cursor[1] - this.offsetY,
         dx: this.mouse.velocity[0] * this.wSize.w,
         dy: this.mouse.velocity[1] * -this.wSize.h,
       });
     }
 
-	// console.log(this.mouse.cursor[0],  this.mouse.cursor[1])
 
     this.gl.renderer.autoClear = false;
-    // Render all of the inputs since last frame
     for (let i = this.splats.length - 1; i >= 0; i--) {
       this.splat(this.splats.splice(i, 1)[0]);
     }
